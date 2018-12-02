@@ -1,13 +1,14 @@
 clc;
 clear
 fnm = 'AirQualityUCI3.xlsx';
-rh = 'D:D';
+rh = 'G:G';
 RH = xlsread(fnm,rh);
 %testing the kalman algo on 100 data points. Univariate
 mea = RH(1:250); %Measured value / per hour
-R_mea = 0.01*mea;%rand(length(mea),1).*mea/100;
+mea = mea.*(mea>0) + 0.0001;
+R_mea = 0.01;%rand(length(mea),1).*mea/100;
 est_rh = 1.0;  % A random initial estimate
-est_error = 0.01; % 2
+est_error = 0.05; % 2
 prediction = zeros(length(mea),1);
 %ismalicious = zeros(length(mea),1);
 KG = 1;
@@ -15,12 +16,10 @@ KG = 1;
 %curr_error = 0;
 
 for k=1:250
-    if (k~=1)
-        est_rh=0.83*prediction(k-1);
-    elseif (k==8 || k==18)
-            est_rh=1.2*prediction(k-1);
+    if (k>3)
+        est_rh = (0.4*prediction(k-3) + 0.6*prediction(k-2) + 0.8*prediction(k-1))/1.8;
     end
-    KG = est_error/(est_error + R_mea(k));
+    KG = est_error/(est_error + R_mea);
     est_rh = est_rh + KG*(mea(k) - est_rh);
     prediction(k) = est_rh;
     est_error = (1-KG)*est_error;
