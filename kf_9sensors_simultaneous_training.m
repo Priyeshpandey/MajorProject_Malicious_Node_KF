@@ -45,14 +45,22 @@ kg = ones(1,dimension(2));                %Initial Kalman gain
         %curr_error = (mea(k) - est_rh)/mea(k);
         %ismalicious(k) = curr_error > error_th;
     end
-%%
+%% Calculating threshold for error
+error_threshold = zeros(24,dimension(2));
+
 for row=1:24
-    ratio_avg(row,:) = get_avg2(row,prediction,measurement);
+    [ratio_avg(row,:),error_threshold(row,:)] = get_avg2(row,prediction,measurement);
 end
 
+%% Correcting KF for seasonal Variation
 for row=0:dimension(1)-1
     prediction(row+1,:) = ratio_avg(mod(row,24)+1,:).*prediction(row+1,:);
 end
 
-
-    
+%% Malicious Node Detection
+error_calculated = 0;
+malnode = zeros(dimension);
+for row=0:dimension(1)-1
+    error_calculated = abs(measurement(row+1,:) - prediction(row+1,:));
+    malnode(row+1,:) = error_calculated > error_threshold(mod(row,24)+1,:);
+end
