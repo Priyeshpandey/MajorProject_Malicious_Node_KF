@@ -8,7 +8,7 @@ mea = RH(8:247); %Measured value / per hour
 mea = mea.*(mea>0) + 0.0001;
 R_mea = 0.01;%rand(length(mea),1).*mea/100;
 est_rh = 11.0;  % A random initial estimate
-est_error = 0.01; % 2
+est_error = 0.1; % 2
 estr = zeros(length(mea),1);
 kgV = zeros(length(mea),1);
 prediction = zeros(length(mea),1);
@@ -19,10 +19,10 @@ KG = 1;
 %curr_error = 0;
 
 for k=1:240
-   % if (k>3)
-    %    est_rh = (0.4*prediction(k-3) + 0.6*prediction(k-2) + 0.8*prediction(k-1))/1.8;
-        %est_error = ((0.4^2)*estr(k-3) + (0.6^2)*estr(k-2) + (0.8^2)*estr(k-1))/(0.4^2+0.6^2+0.8^2);
-   % end
+    if (k>3)
+        est_rh = (0.4*prediction(k-3) + 0.6*prediction(k-2) + 0.8*prediction(k-1))/1.8;
+        est_error = ((0.4^2)*estr(k-3) + (0.6^2)*estr(k-2) + (0.8^2)*estr(k-1))/(0.4^2+0.6^2+0.8^2);
+    end
     KG = est_error/(est_error + R_mea);
     kgV(k) = KG;
     est_rh = est_rh + KG*(mea(k) - est_rh);
