@@ -1,4 +1,5 @@
-function [y,std] = get_avg2(beg,pred,mea)
+function [y,std] = get_avg2(beg,pred,mea)   %Calculates seasonal factors
+                                            %and seasonal standard deviation
     dim = size(mea);
     jmp = 24;
     num = 0;
