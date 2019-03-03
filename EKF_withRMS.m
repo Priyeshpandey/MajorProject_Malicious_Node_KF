@@ -1,4 +1,4 @@
-%%Main File for Kalman Filtering and training of seasonal factors
+%%Extended Kalman Filter with root mean square 
 
 clc;
 clear
@@ -14,12 +14,6 @@ data4 = xlsread(filename,exelr4);
 exelr5 = 'O8:M168';
 data5 = xlsread(filename,exelr5);
 measurement = horzcat(data1,data2,data3,data4,data5);
-% filename = 'AirQualityUCI3.xlsx';   %Air quality Data
-% exelrange = 'E9:M2408'; % 1 week data 9 sensors selected
-% %Testing the kalman algo on 9 sensors data simultaneously. Multivariate
-% measurement = xlsread(filename,exelrange); %Measured value / per hour for one week 168 hours.
-% measize = size(measurement);
-% visited = zeros(measize(1),measize(2));
 
 %% Data Filtering
 %Count all the missing and negative values and replace it with global average
@@ -28,26 +22,6 @@ negative_measurement = (measurement < 0);
 count_missing = sum(missing_measurement + negative_measurement);    %Count number of all invalid data
 temp_measure = measurement.*(~negative_measurement);                %Removing negatives from data
 dimension = size(measurement);                                      %Data Dimension
-%no_of_actual_malicious = count_missing  + injected_count;
-% avg = zeros(24,dimension(2));                                       %Calculating seasonal average
-% 
-% sum = 0;
-% for col=1:dimension(2)
-%    for s=1:24
-%        num = 0;
-%        sum = 0;
-%        for row=s:24:dimension(1)
-%            if missing_measurement(row,col) == 1 || negative_measurement(row,col) == 1
-%                num = num+1;
-%            else
-%                sum = sum + measurement(row,col);
-%            end
-%        end
-%        avg(s,col) = sum/(7-num);
-%    end
-%     
-% end
-
 avg = sum(temp_measure,'omitnan')./(length(measurement) - count_missing);
 %Global average
 for col=1:dimension(2)        %Replace missing values with global average
@@ -71,8 +45,8 @@ kg = ones(1,dimension(2));                %Initial Kalman gain
 %% Running Kalman filter
     for row=1:dimension(1)
         if (row>3)
-            estimation = (0.4*prediction(row-3,:) + 0.6*prediction(row-2,:) + 0.8*prediction(row-1,:))/1.8;
-            estimat_error = ((0.4^2)*estimation_error(row-3,:) + (0.6^2)*estimation_error(row-2,:) + (0.8^2)*estimation_error(row-1,:))/(0.4^2+0.6^2+0.8^2);
+            estimation = sqrt((prediction(row-3,:).^2 + prediction(row-2,:).^2 + prediction(row-1,:).^2)/3);
+            estimat_error = sqrt((estimation_error(row-3,:) + estimation_error(row-2,:) + estimation_error(row-1,:))/3);
         end
         kg = estimat_error./(estimat_error + sensor_error);
         KG(row,:) = kg;

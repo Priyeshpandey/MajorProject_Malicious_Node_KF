@@ -5,6 +5,15 @@ rh = 'G:G';
 RH = xlsread(fnm,rh);
 %testing the kalman algo on 100 data points. Univariate
 mea = RH(8:247); %Measured value / per hour
+%Simulating Injection of 20% malicious data (33)
+
+for p=1:9
+    ku = 1;
+    while ku<34
+        mea(p,randi(240))
+        ku+=1;
+    end
+end
 mea = mea.*(mea>0) + 0.0001;
 R_mea = 0.01;%rand(length(mea),1).*mea/100;
 est_rh = 11.0;  % A random initial estimate
